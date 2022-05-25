@@ -3,9 +3,8 @@
 
 #include "kona-pmic-overlay.dtsi"
 #include "kona-sde-display.dtsi"
-#include "camera/kona-camera-sensor-mtp.dtsi"
+//#include "camera/kona-camera-sensor-mtp.dtsi"
 #include "kona-audio-overlay.dtsi"
-#include "kona-audio-overlay-ar.dtsi"
 #include "kona-thermal-overlay.dtsi"
 
 &qupv3_se12_2uart {
@@ -156,7 +155,6 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&bt_en_sleep>;
 		qca,bt-reset-gpio = <&tlmm 21 0>; /* BT_EN */
-		qca,wl-reset-gpio = <&tlmm 20 0>; /* WL_EN */
 		qca,bt-sw-ctrl-gpio = <&tlmm 124 0>; /* SW_CTRL */
 		qca,bt-vdd-aon-supply = <&pm8150_s6>;
 		qca,bt-vdd-dig-supply = <&pm8009_s2>;
@@ -334,6 +332,14 @@
 		qcom,pre-scaling = <1 3>;
 	};
 
+	xo_therm@4c {
+		reg = <ADC_XO_THERM_PU2>;
+		label = "xo_therm";
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+		qcom,pre-scaling = <1 1>;
+	};
+
 	skin_therm@4d {
 		reg = <ADC_AMUX_THM1_PU2>;
 		label = "skin_therm";
@@ -361,6 +367,14 @@
 		qcom,pre-scaling = <1 3>;
 	};
 
+	BTM_CON_TEMP_ALT_ADC@52 {
+		reg = <ADC_GPIO1_PU2>;
+		label = "BTM_CON_TEMP_ALT_ADC";
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+		qcom,pre-scaling = <1 1>;
+	};
+	
 	camera_flash_therm@4d {
 		reg = <ADC_AMUX_THM1_PU2>;
 		label = "camera_flash_therm";
@@ -377,9 +391,9 @@
 		qcom,pre-scaling = <1 1>;
 	};
 
-	pa_therm2@4f {
+	SIDE_CON_TEMP_ALT_ADC@4f {
 		reg = <ADC_AMUX_THM3_PU2>;
-		label = "pa_therm2";
+		label = "SIDE_CON_TEMP_ALT_ADC";
 		qcom,ratiometric;
 		qcom,hw-settle-time = <200>;
 		qcom,pre-scaling = <1 1>;
@@ -403,8 +417,15 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 
-	io-channels = <&pm8150_vadc ADC_AMUX_THM1_PU2>,
+	io-channels = <&pm8150_vadc ADC_XO_THERM_PU2>,
+			<&pm8150_vadc ADC_AMUX_THM1_PU2>,
 			<&pm8150_vadc ADC_AMUX_THM2_PU2>;
+
+	xo_therm@4c {
+		reg = <ADC_XO_THERM_PU2>;
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+	};
 
 	skin_therm@4d {
 		reg = <ADC_AMUX_THM1_PU2>;
@@ -551,9 +572,24 @@
 		};
 	};
 
-	skin-therm-usr {
+	xo-therm-usr {
 		polling-delay-passive = <0>;
 		polling-delay = <0>;
+		thermal-governor = "user_space";
+		thermal-sensors = <&pm8150_adc_tm ADC_XO_THERM_PU2>;
+		wake-capable-sensor;
+		trips {
+			active-config0 {
+				temperature = <125000>;
+				hysteresis = <1000>;
+				type = "passive";
+			};
+		};
+	};
+
+	skin-therm-usr {
+		polling-delay-passive = <0>;
+		polling-delay = <1000>;
 		thermal-governor = "user_space";
 		thermal-sensors = <&pm8150_adc_tm ADC_AMUX_THM1_PU2>;
 		wake-capable-sensor;
