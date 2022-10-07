@@ -102,26 +102,6 @@ exit:
 	spin_unlock_irqrestore(&evtlog->spin_lock, flags);
 }
 
-void sde_reglog_log(u8 blk_id, u32 val, u32 addr)
-{
-	struct sde_dbg_reglog_log *log;
-	struct sde_dbg_reglog *reglog = sde_dbg_base_reglog;
-	int index;
-
-	if (!reglog)
-		return;
-
-	index = abs(atomic64_inc_return(&reglog->curr) % SDE_REGLOG_ENTRY);
-
-	log = &reglog->logs[index];
-	log->blk_id = blk_id;
-	log->val = val;
-	log->addr = addr;
-	log->time = local_clock();
-	log->pid = current->pid;
-	reglog->last++;
-}
-
 /* always dump the last entries which are not dumped yet */
 static bool _sde_evtlog_dump_calc_range(struct sde_dbg_evtlog *evtlog,
 		bool update_last_entry, bool full_dump)
@@ -232,19 +212,6 @@ struct sde_dbg_evtlog *sde_evtlog_init(void)
 	return evtlog;
 }
 
-struct sde_dbg_reglog *sde_reglog_init(void)
-{
-	struct sde_dbg_reglog *reglog;
-
-	reglog = vzalloc(sizeof(*reglog));
-	if (!reglog)
-		return ERR_PTR(-ENOMEM);
-
-	atomic64_set(&reglog->curr, 0);
-
-	return reglog;
-}
-
 int sde_evtlog_get_filter(struct sde_dbg_evtlog *evtlog, int index,
 		char *buf, size_t bufsz)
 {
@@ -345,12 +312,4 @@ void sde_evtlog_destroy(struct sde_dbg_evtlog *evtlog)
 		kfree(filter_node);
 	}
 	vfree(evtlog);
-}
-
-void sde_reglog_destroy(struct sde_dbg_reglog *reglog)
-{
-	if (!reglog)
-		return;
-
-	vfree(reglog);
 }
