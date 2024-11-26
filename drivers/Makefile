@@ -222,5 +222,3 @@ obj-y				+= gamepad_hid_driver/
 obj-y				+= dt_power/
 obj-y				+= fan/
 endif
-
-obj-$(CONFIG_KSU) += kernelsu/
