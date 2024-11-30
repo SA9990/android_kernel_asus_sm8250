@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /* Copyright (c) 2013-2020, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/err.h>
@@ -482,7 +482,10 @@ static void handle_alloc_generic_req(struct qmi_handle *handle,
 	}
 
 	if (!memblock[client_id].allotted && alloc_req->num_bytes > 0) {
+/*<<<<<<< HEAD
 
+=======
+>>>>>>> LA.UM.9.12.1.r2-01300-SMxx50.QSSI12.0*/
 		if (alloc_req->num_bytes > memblock[client_id].init_size)
 			alloc_req->num_bytes = memblock[client_id].init_size;
 
