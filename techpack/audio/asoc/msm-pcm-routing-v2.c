@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /* Copyright (c) 2012-2021, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD:techpack/audio/asoc/msm-pcm-routing-v2.c
  * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+
+ * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> LA.UM.9.15.2.r1-10800-KAMORTA.QSSI14.0:asoc/msm-pcm-routing-v2.c
  */
 
 #include <linux/init.h>
@@ -1649,7 +1653,7 @@ static int msm_pcm_routing_channel_mixer_v2(int fe_id, bool perf_mode,
 	int j = 0, be_id = 0;
 	int ret = 0;
 
-	if (fe_id >= MSM_FRONTEND_DAI_MM_SIZE) {
+	if (fe_id >= MSM_FRONTEND_DAI_MAX) {
 		pr_err("%s: invalid FE %d\n", __func__, fe_id);
 		return 0;
 	}
@@ -1716,7 +1720,7 @@ static int msm_pcm_routing_channel_mixer(int fe_id, bool perf_mode,
 		return ret;
 	}
 
-	if (fe_id >= MSM_FRONTEND_DAI_MM_SIZE) {
+	if (fe_id >= MSM_FRONTEND_DAI_MAX) {
 		pr_err("%s: invalid FE %d\n", __func__, fe_id);
 		return 0;
 	}

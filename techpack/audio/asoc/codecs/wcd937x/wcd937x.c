@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2018-2021, The Linux Foundation. All rights reserved.
+<<<<<<< HEAD:techpack/audio/asoc/codecs/wcd937x/wcd937x.c
+
+ * Copyright (c) 2023,2024 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> LA.UM.9.15.2.r1-10800-KAMORTA.QSSI14.0:asoc/codecs/wcd937x/wcd937x.c
  */
 
 #include <linux/module.h>
@@ -243,6 +247,10 @@ static int wcd937x_parse_port_mapping(struct device *dev,
 
 	for (i = 0; i < map_length; i++) {
 		port_num = dt_array[NUM_SWRS_DT_PARAMS * i];
+		if (port_num >= MAX_PORT || ch_iter >= MAX_CH_PER_PORT) {
+			dev_err(dev, "%s: Invalid port or channel number\n", __func__);
+			goto err_pdata_fail;
+		}
 		slave_port_type = dt_array[NUM_SWRS_DT_PARAMS * i + 1];
 		ch_mask = dt_array[NUM_SWRS_DT_PARAMS * i + 2];
 		ch_rate = dt_array[NUM_SWRS_DT_PARAMS * i + 3];
