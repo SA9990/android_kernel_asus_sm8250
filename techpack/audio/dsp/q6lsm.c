@@ -2,9 +2,13 @@
 /*
  * Copyright (c) 2013-2020, Linux Foundation. All rights reserved.
 <<<<<<< HEAD:techpack/audio/dsp/q6lsm.c
+<<<<<<< HEAD:techpack/audio/dsp/q6lsm.c
 
  * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
 >>>>>>> LA.UM.9.15.2.r1-10800-KAMORTA.QSSI14.0:dsp/q6lsm.c
+
+ * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> LA.UM.9.12.r1-18500-SMxx50.QSSI14.0:dsp/q6lsm.c
  */
 #include <linux/fs.h>
 #include <linux/mutex.h>
@@ -2037,6 +2041,18 @@ static int q6lsm_mmapcallback(struct apr_client_data *data, void *priv)
 	The opcode for 4 bytes is 0x12A80
 	The opcode for 8 bytes is 0x110E8.
 	 
+	*/
+
+	if (data->payload_size < (2 * sizeof(uint16_t))) {
+		pr_err("%s: payload has invalid size[%d]\n", __func__,
+			data->payload_size);
+		return -EINVAL;
+	}
+
+	/* 
+	The payload_size can be either 4 or 8 bytes.
+	It has to be verified whether the payload_size is 
+	atleast 4 bytes. If it is less, returns errorcode.
 	*/
 
 	if (data->payload_size < (2 * sizeof(uint16_t))) {

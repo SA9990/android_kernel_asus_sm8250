@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /* Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
 <<<<<<< HEAD:techpack/audio/asoc/msm-compress-q6-v2.c
+<<<<<<< HEAD:techpack/audio/asoc/msm-compress-q6-v2.c
 
  * Copyright (c) 2022, 2024 Qualcomm Innovation Center, Inc. All rights reserved.
 >>>>>>> LA.UM.9.15.2.r1-10800-KAMORTA.QSSI14.0:asoc/msm-compress-q6-v2.c
+
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+>>>>>>> LA.UM.9.12.r1-18500-SMxx50.QSSI14.0:asoc/msm-compress-q6-v2.c
  */
 
 
