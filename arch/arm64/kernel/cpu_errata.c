@@ -780,7 +780,6 @@ static const struct midr_range erratum_spec_ssbs_list[] = {
 };
 #endif
 
->>>>>>> v4.19.320
 const struct arm64_cpu_capabilities arm64_errata[] = {
 #if	defined(CONFIG_ARM64_ERRATUM_826319) || \
 	defined(CONFIG_ARM64_ERRATUM_827319) || \
