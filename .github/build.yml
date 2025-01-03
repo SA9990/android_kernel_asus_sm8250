@@ -1,0 +1,75 @@
+name: Build Android Kernel
+
+on:
+  push:
+    branches:
+      - main
+      - development
+  pull_request:
+    branches:
+      - main
+      - development
+
+jobs:
+  build:
+    name: Kernel Build
+    runs-on: ubuntu-latest
+
+    env:
+      ARCH: arm64
+      SUBARCH: arm64
+      CROSS_COMPILE: aarch64-linux-android-
+      CLANG_TRIPLE: aarch64-linux-gnu-
+      PATH: ${{ github.workspace }}/aosp-clang/bin:$PATH
+
+    steps:
+    # Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Set up required dependencies
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          build-essential \
+          libncurses-dev \
+          bison \
+          flex \
+          libssl-dev \
+          gcc-aarch64-linux-gnu \
+          git \
+          ccache \
+          wget \
+          unzip
+
+    # Download and set up AOSP Clang
+    - name: Download AOSP Clang
+      run: |
+        mkdir -p aosp-clang
+        wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r450784d.tar.gz
+        tar -xf clang-r450784d.tar.gz -C aosp-clang
+
+    # Configure the kernel
+    - name: Configure Kernel
+      run: |
+        make vendor/obiwan_defconfig
+
+    # Build the kernel
+    - name: Build Kernel
+      run: |
+        make -j$(nproc) \
+          ARCH=$ARCH \
+          CC=clang \
+          CROSS_COMPILE=$CROSS_COMPILE \
+          CLANG_TRIPLE=$CLANG_TRIPLE \
+          O=out
+
+    # Upload the compiled kernel artifacts
+    - name: Upload Kernel Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: kernel-artifacts
+        path: |
+          out/arch/arm64/boot/Image.gz-dtb
+          out/modules/*.ko
