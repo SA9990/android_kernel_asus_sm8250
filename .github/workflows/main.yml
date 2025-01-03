@@ -20,7 +20,7 @@ jobs:
       CLANG_TRIPLE: aarch64-linux-gnu-
       DTS_SOURCE: arch/arm64/boot/dts/vendor/qcom
       TOOLCHAIN_GCC: $GITHUB_WORKSPACE/toolchains/gcc-64/bin
-      TOOLCHAIN_CLANG: $GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin
+      
 
     steps:
       # Step 1: Checkout Kernel Source
@@ -72,7 +72,7 @@ jobs:
       # Step 6: Configure and Build Kernel
       - name: Configure and Build Kernel
         run: |
-          export PATH=$TOOLCHAIN_CLANG:$PATH
+          export PATH=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin:$PATH
           export CROSS_COMPILE=$TOOLCHAIN_GCC/aarch64-linux-android-
 
           # Load default kernel configuration
