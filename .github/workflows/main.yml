@@ -18,6 +18,9 @@ jobs:
       KERNEL_DEFCONFIG: vendor/obiwan_defconfig
       KERNEL_IMAGE: out/arch/arm64/boot/Image
       CLANG_TRIPLE: aarch64-linux-gnu-
+      DTS_SOURCE: arch/arm64/boot/dts/vendor/qcom
+      TOOLCHAIN_GCC: $GITHUB_WORKSPACE/toolchains/gcc-64/bin
+      TOOLCHAIN_CLANG: $GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin
 
     steps:
       # Step 1: Checkout Kernel Source
@@ -38,16 +41,27 @@ jobs:
             libgl1-mesa-dev xsltproc unzip device-tree-compiler \
             python2 python3 aria2
 
-      # Step 3: Download GCC Toolchain
+      # Step 3: Cache Toolchains
+      - name: Cache Toolchains
+        uses: actions/cache@v3
+        with:
+          path: toolchains/
+          key: ${{ runner.os }}-toolchains
+          restore-keys: |
+            ${{ runner.os }}-toolchains
+
+      # Step 4: Download GCC Toolchain (if cache miss)
       - name: Download GCC Toolchain
+        if: steps.cache-toolchains.outputs.cache-hit != 'true'
         run: |
           mkdir -p $GITHUB_WORKSPACE/toolchains/gcc-64
           aria2c -q -x 16 -s 16 -o gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
           tar -C $GITHUB_WORKSPACE/toolchains/gcc-64/ -zxf gcc-aarch64.tar.gz
           echo "GCC_BIN_PATH=$GITHUB_WORKSPACE/toolchains/gcc-64/bin" >> $GITHUB_ENV
 
-      # Step 4: Download Clang Toolchain
+      # Step 5: Download Clang Toolchain (if cache miss)
       - name: Download Clang Toolchain
+        if: steps.cache-toolchains.outputs.cache-hit != 'true'
         run: |
           mkdir -p $GITHUB_WORKSPACE/toolchains/clang
           curl -L -o clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r522817.tar.gz
@@ -55,11 +69,11 @@ jobs:
           tar -xzf clang.tar.gz -C $GITHUB_WORKSPACE/toolchains/clang/clang-r522817
           rm clang.tar.gz
 
-      # Step 5: Configure and Build Kernel
+      # Step 6: Configure and Build Kernel
       - name: Configure and Build Kernel
         run: |
-          export PATH=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin:$PATH
-          export CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/gcc-64/bin/aarch64-linux-android-
+          export PATH=$TOOLCHAIN_CLANG:$PATH
+          export CROSS_COMPILE=$TOOLCHAIN_GCC/aarch64-linux-android-
 
           # Load default kernel configuration
           make -j$(nproc --all) \
@@ -100,14 +114,26 @@ jobs:
               LLVM_IAS=1 \
               CROSS_COMPILE=$CROSS_COMPILE
 
-      # Step 6: Upload Kernel Image
+      # Step 7: Collect and Merge DTBs
+      - name: Collect and Merge DTBs
+        run: |
+          find out/$DTS_SOURCE -name '*.dtb' -exec cat {} + > out/arch/arm64/boot/dtb
+
+      # Step 8: Upload Kernel Image
       - name: Upload Kernel Image
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Kernel-Image
           path: out/arch/arm64/boot/Image
 
-      # Step 7: Validate Kernel Build
+      # Step 9: Upload DTBs
+      - name: Upload DTBs
+        uses: actions/upload-artifact@v4
+        with:
+          name: DTBs
+          path: out/arch/arm64/boot/dtb
+
+      # Step 10: Validate Kernel Build
       - name: Validate Kernel Build
         run: |
           if [ ! -f "$KERNEL_IMAGE" ]; then
