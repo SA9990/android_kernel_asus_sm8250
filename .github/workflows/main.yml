@@ -1,16 +1,13 @@
-name: Kernel Build with Clang (GCC bin path exported)
+name: Kernel Build with Clang and GCC
 
 on:
   push:
     branches:
       - main
-      - "release/*"  # Trigger on branches starting with "release/"
   pull_request:
     branches:
       - main
-  workflow_dispatch:  # Allow manual trigger
-  schedule:  # Scheduled builds
-    - cron: "0 2 * * *"  # Daily at 2:00 AM UTC
+  workflow_dispatch:  # Allow manual triggers
 
 jobs:
   build:
@@ -18,16 +15,14 @@ jobs:
 
     env:
       ARCH: arm64
-      SUBARCH: arm64
       KERNEL_DEFCONFIG: vendor/obiwan_defconfig
       KERNEL_IMAGE: out/arch/arm64/boot/Image
-      ENABLE_GCC_ARM64: true
-      USE_CUSTOM_GCC_64: false
-      USE_CUSTOM_GCC_32: false
+      CLANG_TRIPLE: aarch64-linux-gnu-
+      GCC_BIN_PATH: ""
 
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout Source Code
+      # Step 1: Checkout Kernel Source
+      - name: Checkout Kernel Source
         uses: actions/checkout@v3
 
       # Step 2: Install Build Dependencies
@@ -35,96 +30,69 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y \
-            git \
-            ccache \
-            automake \
-            flex \
-            lzop \
-            bison \
-            gperf \
-            build-essential \
-            zip \
-            curl \
-            zlib1g-dev \
-            g++-multilib \
-            libxml2-utils \
-            bzip2 \
-            libbz2-dev \
-            libbz2-1.0 \
-            libghc-bzlib-dev \
-            squashfs-tools \
-            pngcrush \
-            schedtool \
-            dpkg-dev \
-            liblz4-tool \
-            make \
-            optipng \
-            maven \
-            libssl-dev \
-            pwgen \
-            libswitch-perl \
-            policycoreutils \
-            minicom \
-            libxml-sax-base-perl \
-            libxml-simple-perl \
-            bc \
-            libc6-dev-i386 \
-            lib32ncurses5-dev \
-            libx11-dev \
-            lib32z-dev \
-            libgl1-mesa-dev \
-            xsltproc \
-            unzip \
-            device-tree-compiler \
-            python2 \
-            python3 \
-            aria2
+            git ccache automake flex lzop bison gperf build-essential \
+            zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 \
+            libbz2-dev squashfs-tools pngcrush schedtool dpkg-dev \
+            liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl \
+            policycoreutils minicom libxml-sax-base-perl libxml-simple-perl \
+            bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev \
+            libgl1-mesa-dev xsltproc unzip device-tree-compiler \
+            python2 python3 aria2
 
-      # Step 3: Download GCC-AOSP (For export path)
-      - name: Download GCC-AOSP
+      # Step 3: Download and Extract GCC Toolchain
+      - name: Download GCC Toolchain
         run: |
-          mkdir -p $GITHUB_WORKSPACE/kernel_workspace
-          cd $GITHUB_WORKSPACE/kernel_workspace
-          mkdir -p gcc-64
-          aria2c -q -o gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
-          tar -C gcc-64/ -zxf gcc-aarch64.tar.gz
-          rm gcc-aarch64.tar.gz
-          # Export GCC bin path to use later if needed
-          echo "GCC_BIN_PATH=$GITHUB_WORKSPACE/kernel_workspace/gcc-64/bin" >> $GITHUB_ENV
-          echo "CROSS_COMPILE=$GITHUB_WORKSPACE/kernel_workspace/gcc-64/bin/aarch64-linux-android-" >> $GITHUB_ENV
+          mkdir -p $GITHUB_WORKSPACE/toolchains/gcc-64
+          aria2c -q -x 16 -s 16 -o gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
+          tar -C $GITHUB_WORKSPACE/toolchains/gcc-64/ -zxf gcc-aarch64.tar.gz
+          echo "GCC_BIN_PATH=$GITHUB_WORKSPACE/toolchains/gcc-64/bin" >> $GITHUB_ENV
 
-      # Step 4: Download Google's Clang (For Kernel Build)
-      - name: Download Google's Prebuilt Clang
+      # Step 4: Download and Extract Clang Toolchain
+      - name: Download Clang Toolchain
         run: |
-          mkdir -p toolchains
-          curl -L -o clang-r522817.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r522817.tar.gz
-          mkdir -p toolchains/clang-r522817
-          tar -xzf clang-r522817.tar.gz -C toolchains/clang-r522817
-          rm clang-r522817.tar.gz
+          mkdir -p $GITHUB_WORKSPACE/toolchains/clang
+          curl -L -o clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r522817.tar.gz
+          mkdir -p $GITHUB_WORKSPACE/toolchains/clang/clang-r522817
+          tar -xzf clang.tar.gz -C $GITHUB_WORKSPACE/toolchains/clang/clang-r522817
+          rm clang.tar.gz
+          export PATH=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin:$PATH
 
-      # Step 5: Build the Kernel with Clang
-      - name: Build Kernel with Clang
+      # Step 5: Build the Kernel with Clang and GCC
+      - name: Build Kernel
         run: |
-          make O=out ARCH=$ARCH $KERNEL_DEFCONFIG
-          make -j$(nproc) O=out ARCH=$ARCH \
-            CC=${GITHUB_WORKSPACE}/toolchains/clang-r522817/clang/bin/clang \
-            CROSS_COMPILE=$CROSS_COMPILE \
-            CROSS_COMPILE_ARM32=${GITHUB_WORKSPACE}/toolchains/clang-r522817/clang/bin/arm-linux-gnueabi-
+          export PATH=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin:$PATH
+          export CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/gcc-64/bin/aarch64-linux-android-
+          make -j$(nproc --all) \
+              CC=clang \
+              O=out \
+              ARCH=$ARCH \
+              CLANG_TRIPLE=${{ env.CLANG_TRIPLE }} \
+              AR=llvm-ar \
+              NM=llvm-nm \
+              LLVM_DIS=llvm-dis \
+              OBJCOPY=llvm-objcopy \
+              READELF=llvm-readelf \
+              OBJDUMP=llvm-objdump \
+              OBJSIZE=llvm-size \
+              STRIP=llvm-strip \
+              LLVM=1 \
+              LD=ld.lld \
+              LLVM_IAS=1 \
+              CROSS_COMPILE=$CROSS_COMPILE \
+              $KERNEL_DEFCONFIG
 
-      # Step 6: Upload Kernel Artifacts (Clang Build)
-      - name: Upload Kernel Artifacts (Clang Build)
+      # Step 6: Upload Kernel Image
+      - name: Upload Kernel Image
         uses: actions/upload-artifact@v3
         with:
-          name: Kernel-Artifacts-Clang
-          path: |
-            out/arch/arm64/boot/
-            out/arch/arm64/boot/Image
+          name: Kernel-Image
+          path: out/arch/arm64/boot/Image
 
-      # Step 7: Validate Kernel Image for Clang Build
-      - name: Validate Kernel Image for Clang Build
+      # Step 7: Validate Build
+      - name: Validate Kernel Build
         run: |
           if [ ! -f "$KERNEL_IMAGE" ]; then
-            echo "Kernel build failed with Clang: $KERNEL_IMAGE not found"
+            echo "Kernel build failed: $KERNEL_IMAGE not found"
             exit 1
           fi
-          echo "Kernel built successfully with Clang: $KERNEL_IMAGE"
+          echo "Kernel build succeeded: $KERNEL_IMAGE"
