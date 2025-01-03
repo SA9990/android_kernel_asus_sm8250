@@ -1,4 +1,4 @@
-name: Kernel Build with Clang and GCC
+name: Kernel Build
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:  # Allow manual triggers
+  workflow_dispatch: # Allow manual triggers
 
 jobs:
   build:
@@ -18,7 +18,6 @@ jobs:
       KERNEL_DEFCONFIG: vendor/obiwan_defconfig
       KERNEL_IMAGE: out/arch/arm64/boot/Image
       CLANG_TRIPLE: aarch64-linux-gnu-
-      GCC_BIN_PATH: ""
 
     steps:
       # Step 1: Checkout Kernel Source
@@ -39,7 +38,7 @@ jobs:
             libgl1-mesa-dev xsltproc unzip device-tree-compiler \
             python2 python3 aria2
 
-      # Step 3: Download and Extract GCC Toolchain
+      # Step 3: Download GCC Toolchain
       - name: Download GCC Toolchain
         run: |
           mkdir -p $GITHUB_WORKSPACE/toolchains/gcc-64
@@ -47,7 +46,7 @@ jobs:
           tar -C $GITHUB_WORKSPACE/toolchains/gcc-64/ -zxf gcc-aarch64.tar.gz
           echo "GCC_BIN_PATH=$GITHUB_WORKSPACE/toolchains/gcc-64/bin" >> $GITHUB_ENV
 
-      # Step 4: Download and Extract Clang Toolchain
+      # Step 4: Download Clang Toolchain
       - name: Download Clang Toolchain
         run: |
           mkdir -p $GITHUB_WORKSPACE/toolchains/clang
@@ -55,13 +54,14 @@ jobs:
           mkdir -p $GITHUB_WORKSPACE/toolchains/clang/clang-r522817
           tar -xzf clang.tar.gz -C $GITHUB_WORKSPACE/toolchains/clang/clang-r522817
           rm clang.tar.gz
-          export PATH=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin:$PATH
 
-      # Step 5: Build the Kernel with Clang and GCC
-      - name: Build Kernel
+      # Step 5: Configure and Build Kernel
+      - name: Configure and Build Kernel
         run: |
           export PATH=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin:$PATH
           export CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/gcc-64/bin/aarch64-linux-android-
+
+          # Load default kernel configuration
           make -j$(nproc --all) \
               CC=clang \
               O=out \
@@ -81,6 +81,25 @@ jobs:
               CROSS_COMPILE=$CROSS_COMPILE \
               $KERNEL_DEFCONFIG
 
+          # Build the kernel
+          make -j$(nproc --all) \
+              CC=clang \
+              O=out \
+              ARCH=$ARCH \
+              CLANG_TRIPLE=${{ env.CLANG_TRIPLE }} \
+              AR=llvm-ar \
+              NM=llvm-nm \
+              LLVM_DIS=llvm-dis \
+              OBJCOPY=llvm-objcopy \
+              READELF=llvm-readelf \
+              OBJDUMP=llvm-objdump \
+              OBJSIZE=llvm-size \
+              STRIP=llvm-strip \
+              LLVM=1 \
+              LD=ld.lld \
+              LLVM_IAS=1 \
+              CROSS_COMPILE=$CROSS_COMPILE
+
       # Step 6: Upload Kernel Image
       - name: Upload Kernel Image
         uses: actions/upload-artifact@v3
@@ -88,7 +107,7 @@ jobs:
           name: Kernel-Image
           path: out/arch/arm64/boot/Image
 
-      # Step 7: Validate Build
+      # Step 7: Validate Kernel Build
       - name: Validate Kernel Build
         run: |
           if [ ! -f "$KERNEL_IMAGE" ]; then
