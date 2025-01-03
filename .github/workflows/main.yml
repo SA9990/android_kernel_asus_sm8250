@@ -20,7 +20,7 @@ jobs:
       ARCH: arm64
       SUBARCH: arm64
       KERNEL_DEFCONFIG: vendor/obiwan_defconfig
-      CLANG_PATH: ${{ github.workspace }}/toolchains/neutron-clang
+      CLANG_PATH: ${{ github.workspace }}/toolchains/clang-r522817
       KERNEL_IMAGE: out/arch/arm64/boot/Image.gz-dtb
 
     steps:
@@ -28,18 +28,14 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Clang
-      - name: Download and Set Up Neutron Clang
+      # Step 2: Download and Set Up Google's Clang
+      - name: Download and Set Up Google's Prebuilt Clang
         run: |
           mkdir -p toolchains
-          curl -L -o clang-neutron.tar.gz https://github.com/Neutron-Toolchains/clang-build-catalogue/releases/latest/download/clang-neutron.tar.gz
-          if file clang-neutron.tar.gz | grep -q 'gzip compressed data'; then
-            tar -xzf clang-neutron.tar.gz -C toolchains
-            rm clang-neutron.tar.gz
-          else
-            echo "Downloaded file is not in gzip format. Please check the URL or file integrity."
-            exit 1
-          fi
+          curl -L -o clang-r522817.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r522817.tar.gz
+          mkdir -p toolchains/clang-r522817
+          tar -xzf clang-r522817.tar.gz -C toolchains/clang-r522817
+          rm clang-r522817.tar.gz
 
       # Step 3: Install dependencies
       - name: Install Build Dependencies
