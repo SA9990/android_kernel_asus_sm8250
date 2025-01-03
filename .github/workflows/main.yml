@@ -3,14 +3,14 @@ name: Kernel Build
 on:
   push:
     branches:
-      - main # Trigger on pushes to the main branch
-      - "release/*" # Trigger on pushes to branches starting with "release/"
+      - main
+      - "release/*" # Trigger on branches starting with "release/"
   pull_request:
     branches:
-      - main # Trigger on pull requests targeting the main branch
-  workflow_dispatch: # Trigger manually from the Actions tab
+      - main
+  workflow_dispatch: # Allow manual trigger
   schedule: # Scheduled builds
-    - cron: "0 2 * * *" # Runs daily at 2:00 AM UTC
+    - cron: "0 2 * * *" # Daily at 2:00 AM UTC
 
 jobs:
   build:
@@ -25,25 +25,30 @@ jobs:
 
     steps:
       # Step 1: Checkout the repository
-      - name: Checkout source code
+      - name: Checkout Source Code
         uses: actions/checkout@v3
 
       # Step 2: Set up Clang
-      - name: Download Neutron Clang
+      - name: Download and Set Up Neutron Clang
         run: |
           mkdir -p toolchains
-          curl -LO https://github.com/Neutron-Toolchains/clang-builds/releases/latest/download/clang-neutron.tar.gz
-          tar -xzf clang-neutron.tar.gz -C toolchains
-          rm clang-neutron.tar.gz
+          curl -L -o clang-neutron.tar.gz https://github.com/Neutron-Toolchains/clang-build-catalogue/releases/latest/download/clang-neutron.tar.gz
+          if file clang-neutron.tar.gz | grep -q 'gzip compressed data'; then
+            tar -xzf clang-neutron.tar.gz -C toolchains
+            rm clang-neutron.tar.gz
+          else
+            echo "Downloaded file is not in gzip format. Please check the URL or file integrity."
+            exit 1
+          fi
 
       # Step 3: Install dependencies
-      - name: Install build dependencies
+      - name: Install Build Dependencies
         run: |
           sudo apt update
           sudo apt install -y bc bison flex libssl-dev make gcc curl cpio build-essential libncurses-dev
 
-      # Step 4: Build the kernel
-      - name: Build the kernel
+      # Step 4: Configure and Build the Kernel
+      - name: Build the Kernel
         run: |
           make O=out ARCH=$ARCH $KERNEL_DEFCONFIG
           make -j$(nproc) O=out ARCH=$ARCH \
@@ -51,8 +56,8 @@ jobs:
             CROSS_COMPILE=${CLANG_PATH}/bin/aarch64-linux-gnu- \
             CROSS_COMPILE_ARM32=${CLANG_PATH}/bin/arm-linux-gnueabi-
 
-      # Step 5: Upload kernel artifacts
-      - name: Upload kernel build artifacts
+      # Step 5: Upload Kernel Artifacts
+      - name: Upload Kernel Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: Kernel-Artifacts
@@ -60,7 +65,7 @@ jobs:
             out/arch/arm64/boot/
             out/arch/arm64/boot/Image.gz-dtb
 
-      # Step 6: Validate build output
+      # Step 6: Validate Kernel Image
       - name: Validate Kernel Image
         run: |
           if [ ! -f "$KERNEL_IMAGE" ]; then
