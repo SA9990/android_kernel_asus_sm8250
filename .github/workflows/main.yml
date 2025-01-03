@@ -1,0 +1,66 @@
+name: Kernel Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      ARCH: arm64
+      SUBARCH: arm64
+      KERNEL_DEFCONFIG: vendor/obiwan_defconfig
+      CLANG_PATH: ${{ github.workspace }}/toolchains/neutron-clang
+      KERNEL_IMAGE: out/arch/arm64/boot/Image.gz-dtb
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Clang
+      - name: Download Neutron Clang
+        run: |
+          mkdir -p toolchains
+          curl -LO https://github.com/Neutron-Toolchains/clang-builds/releases/latest/download/clang-neutron.tar.gz
+          tar -xzf clang-neutron.tar.gz -C toolchains
+          rm clang-neutron.tar.gz
+
+      # Step 3: Install dependencies
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y bc bison flex libssl-dev make gcc curl cpio build-essential libncurses-dev
+
+      # Step 4: Build the kernel
+      - name: Build the kernel
+        run: |
+          make O=out ARCH=$ARCH $KERNEL_DEFCONFIG
+          make -j$(nproc) O=out ARCH=$ARCH \
+            CC=${CLANG_PATH}/bin/clang \
+            CROSS_COMPILE=${CLANG_PATH}/bin/aarch64-linux-gnu- \
+            CROSS_COMPILE_ARM32=${CLANG_PATH}/bin/arm-linux-gnueabi-
+
+      # Step 5: Upload kernel artifacts
+      - name: Upload kernel build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Kernel-Artifacts
+          path: |
+            out/arch/arm64/boot/
+            out/arch/arm64/boot/Image.gz-dtb
+
+      # Step 6: Validate build output
+      - name: Validate Kernel Image
+        run: |
+          if [ ! -f "$KERNEL_IMAGE" ]; then
+            echo "Kernel build failed: $KERNEL_IMAGE not found"
+            exit 1
+          fi
+          echo "Kernel built successfully: $KERNEL_IMAGE"
