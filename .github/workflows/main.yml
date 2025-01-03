@@ -3,10 +3,14 @@ name: Kernel Build
 on:
   push:
     branches:
-      - main
+      - main # Trigger on pushes to the main branch
+      - "release/*" # Trigger on pushes to branches starting with "release/"
   pull_request:
     branches:
-      - main
+      - main # Trigger on pull requests targeting the main branch
+  workflow_dispatch: # Trigger manually from the Actions tab
+  schedule: # Scheduled builds
+    - cron: "0 2 * * *" # Runs daily at 2:00 AM UTC
 
 jobs:
   build:
