@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     env:
       ARCH: arm64
@@ -73,7 +73,7 @@ jobs:
       - name: Configure and Build Kernel
         run: |
           export PATH=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin:$PATH
-          export CROSS_COMPILE=$TOOLCHAIN_GCC/aarch64-linux-android-
+          make distclean
 
           # Load default kernel configuration
           make -j$(nproc --all) \
@@ -92,7 +92,7 @@ jobs:
               LLVM=1 \
               LD=ld.lld \
               LLVM_IAS=1 \
-              CROSS_COMPILE=$CROSS_COMPILE \
+              
               $KERNEL_DEFCONFIG
 
           # Build the kernel
@@ -112,7 +112,7 @@ jobs:
               LLVM=1 \
               LD=ld.lld \
               LLVM_IAS=1 \
-              CROSS_COMPILE=$CROSS_COMPILE
+              
 
       # Step 7: Collect and Merge DTBs
       - name: Collect and Merge DTBs
