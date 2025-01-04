@@ -93,7 +93,7 @@ jobs:
               LLVM=1 \
               LD=ld.lld \
               LLVM_IAS=1 \
-              CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/gcc-64/bin/aarch64-linux-android- \
+              CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin/aarch64-linux-android- \
               vendor/obiwan_defconfig
 
           # Build the kernel
@@ -113,7 +113,7 @@ jobs:
               LLVM=1 \
               LD=ld.lld \
               LLVM_IAS=1 \
-              CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/gcc-64/bin/aarch64-linux-android- \
+              CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin/aarch64-linux-android- \
 
       # Step 7: Collect and Merge DTBs
       - name: Collect and Merge DTBs
