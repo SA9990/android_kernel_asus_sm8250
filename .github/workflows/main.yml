@@ -73,8 +73,9 @@ jobs:
       - name: Configure and Build Kernel
         run: |
           export PATH=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin:$PATH
-          make distclean
+          export PATH=$GITHUB_WORKSPACE/toolchains/gcc-64/bin:$PATH
 
+          make distclean
           # Load default kernel configuration
           make -j$(nproc --all) \
               CC=clang \
@@ -92,8 +93,8 @@ jobs:
               LLVM=1 \
               LD=ld.lld \
               LLVM_IAS=1 \
-              
-              $KERNEL_DEFCONFIG
+              CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/gcc-64/bin/aarch64-linux-android- \
+              vendor/obiwan_defconfig
 
           # Build the kernel
           make -j$(nproc --all) \
@@ -112,7 +113,7 @@ jobs:
               LLVM=1 \
               LD=ld.lld \
               LLVM_IAS=1 \
-              
+              CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/gcc-64/bin/aarch64-linux-android- \
 
       # Step 7: Collect and Merge DTBs
       - name: Collect and Merge DTBs
