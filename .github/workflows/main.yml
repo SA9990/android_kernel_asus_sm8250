@@ -19,7 +19,7 @@ jobs:
       KERNEL_IMAGE: out/arch/arm64/boot/Image
       CLANG_TRIPLE: aarch64-linux-gnu-
       DTS_SOURCE: arch/arm64/boot/dts/vendor/qcom
-      TOOLCHAIN_GCC: $GITHUB_WORKSPACE/toolchains/gcc-64/bin
+      
       
 
     steps:
@@ -50,16 +50,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-toolchains
 
-      # Step 4: Download GCC Toolchain (if cache miss)
-      - name: Download GCC Toolchain
-        if: steps.cache-toolchains.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/toolchains/gcc-64
-          aria2c -q -x 16 -s 16 -o gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
-          tar -C $GITHUB_WORKSPACE/toolchains/gcc-64/ -zxf gcc-aarch64.tar.gz
-          echo "GCC_BIN_PATH=$GITHUB_WORKSPACE/toolchains/gcc-64/bin" >> $GITHUB_ENV
-
-      # Step 5: Download Clang Toolchain (if cache miss)
+      
+      # Step 4: Download Clang Toolchain (if cache miss)
       - name: Download Clang Toolchain
         if: steps.cache-toolchains.outputs.cache-hit != 'true'
         run: |
@@ -69,7 +61,7 @@ jobs:
           tar -xzf clang.tar.gz -C $GITHUB_WORKSPACE/toolchains/clang/clang-r522817
           rm clang.tar.gz
 
-      # Step 6: Configure and Build Kernel
+      # Step 5: Configure and Build Kernel
       - name: Configure and Build Kernel
         run: |
           export PATH=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin:$PATH
@@ -115,26 +107,26 @@ jobs:
               LLVM_IAS=1 \
               CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin/aarch64-linux-android- \
 
-      # Step 7: Collect and Merge DTBs
+      # Step 6: Collect and Merge DTBs
       - name: Collect and Merge DTBs
         run: |
           find out/ -name '*.dtb' -exec cat {} + > out/arch/arm64/boot/dtb
 
-      # Step 8: Upload Kernel Image
+      # Step 7: Upload Kernel Image
       - name: Upload Kernel Image
         uses: actions/upload-artifact@v4
         with:
           name: Kernel-Image
           path: out/arch/arm64/boot/Image
 
-      # Step 9: Upload DTBs
+      # Step 8: Upload DTBs
       - name: Upload DTBs
         uses: actions/upload-artifact@v4
         with:
           name: DTBs
           path: out/arch/arm64/boot/dtb
 
-      # Step 10: Validate Kernel Build
+      # Step 9: Validate Kernel Build
       - name: Validate Kernel Build
         run: |
           if [ ! -f "$KERNEL_IMAGE" ]; then
