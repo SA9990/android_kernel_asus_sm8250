@@ -12,16 +12,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-
-    
-      
-      
-      
-      
-      
-      
-      
-
     steps:
       # Step 1: Checkout Kernel Source
       - name: Checkout Kernel Source
@@ -50,7 +40,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-toolchains
 
-      
       # Step 4: Download Clang Toolchain (if cache miss)
       - name: Download Clang Toolchain
         if: steps.cache-toolchains.outputs.cache-hit != 'true'
@@ -65,7 +54,6 @@ jobs:
       - name: Configure and Build Kernel
         run: |
           export PATH=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin:$PATH
-          
 
           make distclean
           # Load default kernel configuration
@@ -105,7 +93,7 @@ jobs:
               LLVM=1 \
               LD=ld.lld \
               LLVM_IAS=1 \
-              CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin/aarch64-linux-android- \
+              CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin/aarch64-linux-android-
 
       # Step 6: Collect and Merge DTBs
       - name: Collect and Merge DTBs
@@ -125,5 +113,3 @@ jobs:
         with:
           name: DTBs
           path: out/arch/arm64/boot/dtb
-
-      
