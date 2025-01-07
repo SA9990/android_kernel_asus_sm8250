@@ -13,12 +13,12 @@ jobs:
   build:
     runs-on: ubuntu-22.04
 
-    env:
-      ARCH: arm64
-      KERNEL_DEFCONFIG: vendor/obiwan_defconfig
-      KERNEL_IMAGE: out/arch/arm64/boot/Image
-      CLANG_TRIPLE: aarch64-linux-gnu-
-      DTS_SOURCE: arch/arm64/boot/dts/vendor/qcom
+    
+      
+      
+      
+      
+      
       
       
 
@@ -72,8 +72,8 @@ jobs:
           make -j$(nproc --all) \
               CC=clang \
               O=out \
-              ARCH=$ARCH \
-              CLANG_TRIPLE=${{ env.CLANG_TRIPLE }} \
+              ARCH=arm64 \
+              CLANG_TRIPLE=aarch64-linux-gnu- \
               AR=llvm-ar \
               NM=llvm-nm \
               LLVM_DIS=llvm-dis \
@@ -92,8 +92,8 @@ jobs:
           make -j$(nproc --all) \
               CC=clang \
               O=out \
-              ARCH=$ARCH \
-              CLANG_TRIPLE=${{ env.CLANG_TRIPLE }} \
+              ARCH=arm64 \
+              CLANG_TRIPLE=aarch64-linux-gnu- \
               AR=llvm-ar \
               NM=llvm-nm \
               LLVM_DIS=llvm-dis \
@@ -126,11 +126,4 @@ jobs:
           name: DTBs
           path: out/arch/arm64/boot/dtb
 
-      # Step 9: Validate Kernel Build
-      - name: Validate Kernel Build
-        run: |
-          if [ ! -f "$KERNEL_IMAGE" ]; then
-            echo "Kernel build failed: $KERNEL_IMAGE not found"
-            exit 1
-          fi
-          echo "Kernel build succeeded: $KERNEL_IMAGE"
+      
