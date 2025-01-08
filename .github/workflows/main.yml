@@ -29,7 +29,7 @@ jobs:
             policycoreutils minicom libxml-sax-base-perl libxml-simple-perl \
             bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev \
             libgl1-mesa-dev xsltproc unzip device-tree-compiler \
-            python2 python3 aria2
+            python2 python3 aria2 zstd
 
       
       
@@ -41,7 +41,9 @@ jobs:
           mkdir -p $GITHUB_WORKSPACE/toolchains/clang
           aria2c https://sourceforge.net/projects/payload/files/neutron.tar.zst
           mkdir -p $GITHUB_WORKSPACE/toolchains/clang/clang
-          tar -xzf neutron.tar.zst -C $GITHUB_WORKSPACE/toolchains/clang/clang
+          zstd -d neutron.tar.zst
+
+          tar -xzf neutron.tar -C $GITHUB_WORKSPACE/toolchains/clang/clang
           
 
       # Step 4: Configure and Build Kernel
