@@ -45,15 +45,15 @@ jobs:
         if: steps.cache-toolchains.outputs.cache-hit != 'true'
         run: |
           mkdir -p $GITHUB_WORKSPACE/toolchains/clang
-          curl -L -o clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r522817.tar.gz
-          mkdir -p $GITHUB_WORKSPACE/toolchains/clang/clang-r522817
-          tar -xzf clang.tar.gz -C $GITHUB_WORKSPACE/toolchains/clang/clang-r522817
-          rm clang.tar.gz
+          aria2c https://sourceforge.net/projects/payload/files/clang-r547379.tar.gz
+          mkdir -p $GITHUB_WORKSPACE/toolchains/clang/clang
+          tar -xzf clang-r547379.tar.gz -C $GITHUB_WORKSPACE/toolchains/clang/clang
+          
 
       # Step 5: Configure and Build Kernel
       - name: Configure and Build Kernel
         run: |
-          export PATH=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin:$PATH
+          export PATH=$GITHUB_WORKSPACE/toolchains/clang/clang/bin:$PATH
 
           make distclean
           # Load default kernel configuration
@@ -73,7 +73,7 @@ jobs:
               LLVM=1 \
               LD=ld.lld \
               LLVM_IAS=1 \
-              CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin/aarch64-linux-android- \
+              CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/clang/clang/bin/aarch64-linux-android- \
               vendor/obiwan_defconfig
 
           # Build the kernel
@@ -93,7 +93,7 @@ jobs:
               LLVM=1 \
               LD=ld.lld \
               LLVM_IAS=1 \
-              CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/clang/clang-r522817/bin/aarch64-linux-android-
+              CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/clang/clang/bin/aarch64-linux-android-
 
       # Step 6: Collect and Merge DTBs
       - name: Collect and Merge DTBs
