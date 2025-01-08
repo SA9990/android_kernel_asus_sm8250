@@ -34,16 +34,16 @@ jobs:
       
       
 
-      # Step 3: Download Clang Toolchain (if cache miss)
+      # Step 3: Download Clang Toolchain
       - name: Download Clang Toolchain
-        if: steps.cache-toolchains.outputs.cache-hit != 'true'
+        
         run: |
           mkdir -p $GITHUB_WORKSPACE/toolchains/clang
-          aria2c https://sourceforge.net/projects/payload/files/neutron.tar.zst
+          aria2c https://sourceforge.net/projects/payload/files/clang-r547379.tar.gz
           mkdir -p $GITHUB_WORKSPACE/toolchains/clang/clang
-          zstd -d neutron.tar.zst
+          
 
-          tar -xzf neutron.tar -C $GITHUB_WORKSPACE/toolchains/clang/clang
+          tar -xzf clang-r547379.tar.gz -C $GITHUB_WORKSPACE/toolchains/clang/clang
           
 
       # Step 4: Configure and Build Kernel
