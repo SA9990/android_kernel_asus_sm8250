@@ -2704,6 +2704,7 @@ cnss_use_nv_mac(struct cnss_plat_data *plat_priv)
 				     "use-nv-mac");
 }
 
+/*<<<<<<< HEAD*/
 /* ASUS_BSP--- for for wifi antenna switch*/
 #if defined ASUS_ZS661KS_PROJECT
 static ssize_t do_wifi_antenna_switch_store(struct device *dev,
@@ -2751,6 +2752,15 @@ static DEVICE_ATTR(do_wifi_antenna_switch, 0644, NULL, do_wifi_antenna_switch_st
 #endif
 /* ASUS_BSP--- for for wifi antenna switch*/
 
+/*=======*/
+static inline int cnss_get_cal_duration(struct cnss_plat_data *plat_priv)
+{
+	return of_property_read_u32(plat_priv->plat_dev->dev.of_node,
+				    "qcom,cnss-cal-duration",
+				    &plat_priv->cal_duration);
+}
+
+/*>>>>>>> LA.UM.9.12.1.r2-01300-SMxx50.QSSI12.0*/
 static int cnss_probe(struct platform_device *plat_dev)
 {
 	int ret = 0;
@@ -2794,6 +2804,9 @@ static int cnss_probe(struct platform_device *plat_dev)
 	plat_priv->device_id = device_id->driver_data;
 	plat_priv->bus_type = cnss_get_bus_type(plat_priv->device_id);
 	plat_priv->use_nv_mac = cnss_use_nv_mac(plat_priv);
+	if (cnss_get_cal_duration(plat_priv) != 0)
+		plat_priv->cal_duration = CNSS_INVALID_CAL_DURATION;
+
 	plat_priv->use_fw_path_with_prefix =
 		cnss_use_fw_path_with_prefix(plat_priv);
 	cnss_set_plat_priv(plat_dev, plat_priv);
