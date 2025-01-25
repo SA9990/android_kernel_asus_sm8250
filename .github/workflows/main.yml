@@ -53,7 +53,7 @@ jobs:
           0=out \
           ARCH=arm64 \
           CLANG_TRIPLE=aarch64-linux-gnu- \
-          CROSS_COMPILE=$GITHUB_WORKSPACE/gcc/bin/aarch64-linux-android- \
+          CROSS_COMPILE=aarch64-linux-android- \
           vendor/obiwan_defconfig \
 
           # Build the kernel
@@ -62,7 +62,7 @@ jobs:
           0=out \
           ARCH=arm64 \
           CLANG_TRIPLE=aarch64-linux-gnu- \
-          CROSS_COMPILE=$GITHUB_WORKSPACE/gcc/bin/aarch64-linux-android- \
+          CROSS_COMPILE=aarch64-linux-android- \
 
       # Step 5: Collect and Merge DTBs
       - name: Collect and Merge DTBs
