@@ -53,20 +53,20 @@ jobs:
 
           # Load default kernel configuration
           make -j$(nproc --all) \
-          CC=clang 
-          0=out
-          ARCH=arm64
-          CLANG_TRIPLE=aarch64-linux-gnu-
+          CC=clang \
+          0=out \
+          ARCH=arm64 \
+          CLANG_TRIPLE=aarch64-linux-gnu- \
           CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/gcc/bin/aarch64-linux-android- \
           vendor/obiwan_defconfig
 
           # Build the kernel
           make -j$(nproc --all) \
-          CC=clang
-          0=out
-          ARCH=arm64
-          CLANG_TRIPLE=aarch64-linux-gnu-
-          CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/gcc/bin/aarch64-linux-android-
+          CC=clang \
+          0=out \
+          ARCH=arm64 \
+          CLANG_TRIPLE=aarch64-linux-gnu- \
+          CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/gcc/bin/aarch64-linux-android- \
 
       # Step 5: Collect and Merge DTBs
       - name: Collect and Merge DTBs
