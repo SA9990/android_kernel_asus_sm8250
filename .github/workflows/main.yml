@@ -33,16 +33,16 @@ jobs:
       # Step 3: Download Clang Toolchain
       - name: Download Clang Toolchain
         run: |
-          cd ~
-          aria2c https://sourceforge.net/projects/payload/files/proton-clang-master.zip
-          unzip proton-clang-master.zip \
+          git clone https://github.com/kdrag0n/proton-clang.git
+          
+          
           
           pwd \
           git clone https://github.com/SA9990/gcc.git
       # Step 4: Configure and Build Kernel
       - name: Configure and Build Kernel
         run: |
-          export PATH=$GITHUB_WORKSPACE/proton-clang-master/bin:$PATH
+          export PATH=$GITHUB_WORKSPACE/proton-clang/bin:$PATH
           export PATH=$GITHUB_WORKSPACE/gcc/bin:$PATH
           make distclean
           
