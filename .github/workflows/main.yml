@@ -34,8 +34,7 @@ jobs:
       - name: Download Clang Toolchain
         run: |
           cd ~
-          aria2c https://sourceforge.net/projects/payload/files/proton-clang-master.zip    mkdir
-
+          aria2c https://sourceforge.net/projects/payload/files/proton-clang-master.zip
           unzip proton-clang-master.zip
           cd ~
           
