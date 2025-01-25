@@ -33,21 +33,18 @@ jobs:
       # Step 3: Download Clang Toolchain
       - name: Download Clang Toolchain
         run: |
-          mkdir -p $GITHUB_WORKSPACE/toolchains/clang
-          aria2c https://sourceforge.net/projects/payload/files/proton-clang-master.zip
-
-
-          mkdir -p $GITHUB_WORKSPACE/toolchains/clang
+          cd ~
+          aria2c https://sourceforge.net/projects/payload/files/proton-clang-master.zip    mkdir
 
           unzip proton-clang-master.zip
           cd ~
-          cd $GITHUB_WORKSPACE/toolchains
+          
           git clone https://github.com/SA9990/gcc.git
       # Step 4: Configure and Build Kernel
       - name: Configure and Build Kernel
         run: |
           export PATH=$GITHUB_WORKSPACE/proton-clang-master/bin:$PATH
-          export PATH=$GITHUB_WORKSPACE/toolchains/gcc/bin:$PATH
+          export PATH=$GITHUB_WORKSPACE/gcc/bin:$PATH
           make distclean
           
 
@@ -57,8 +54,8 @@ jobs:
           0=out \
           ARCH=arm64 \
           CLANG_TRIPLE=aarch64-linux-gnu- \
-          CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/gcc/bin/aarch64-linux-android- \
-          vendor/obiwan_defconfig
+          CROSS_COMPILE=$GITHUB_WORKSPACE/gcc/bin/aarch64-linux-android- \
+          vendor/obiwan_defconfig \
 
           # Build the kernel
           make -j$(nproc --all) \
@@ -66,7 +63,7 @@ jobs:
           0=out \
           ARCH=arm64 \
           CLANG_TRIPLE=aarch64-linux-gnu- \
-          CROSS_COMPILE=$GITHUB_WORKSPACE/toolchains/gcc/bin/aarch64-linux-android- \
+          CROSS_COMPILE=$GITHUB_WORKSPACE/gcc/bin/aarch64-linux-android- \
 
       # Step 5: Collect and Merge DTBs
       - name: Collect and Merge DTBs
