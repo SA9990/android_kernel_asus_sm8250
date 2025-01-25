@@ -1,6 +1,9 @@
 name: Kernel Build
 
 on:
+ push:
+    branches:
+      - '*'
  
   workflow_dispatch: # Allow manual triggers
 
