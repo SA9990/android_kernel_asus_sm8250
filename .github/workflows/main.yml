@@ -1,6 +1,6 @@
 name: Kernel Build
 
-on:
+ on:
  push:
     branches:
       - '*'
